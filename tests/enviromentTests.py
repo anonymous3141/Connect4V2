@@ -16,9 +16,9 @@ def testSequence(sequence,display=True):
     for i in range(len(sequence)):
         x.play(sequence[i])
         if i != len(sequence)-1:
-            assert(x.getResult() == 0 and x.terminal() == 0)
+            assert(not(x.getResult() or x.isTerminal()))
     if display: x.displayBoard()
-    print(x.terminal(), x.getResult())
+    print(x.isTerminal(), x.getResult())
     print(x.numMoves, x.turn, x.mask1, x.mask2)
 
 # basic functionality
@@ -45,3 +45,6 @@ testSequence(seq2)
 diagonal_test_yellow = '4534332222'
 seq3 = [int(c)-1 for c in diagonal_test_yellow]
 testSequence(seq3)
+
+testSequence([6])
+testSequence([5])

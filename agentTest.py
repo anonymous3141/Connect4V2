@@ -9,14 +9,16 @@ def play_input(model, ai_goes_first = True):
     # get human to play model
     env = ConnectFour()
     done = False
-
+    reward = 0
     if ai_goes_first:
-        # cant be done on first move
-        move = model.move(env, env.getTurn())
-        state, _, _ = env.play(move)
-
+        print("AI GOING FIRST")
+        move = model.move(env)
+        print(move)
+        _, _, _ = env.play(move)
+        
     while not done:
         env.displayBoard()
+        print(env.turn, env.numMoves, env.mask1, env.mask2)
         move = -1
         while True:
             #print("AI Suggested move:")
@@ -29,7 +31,7 @@ def play_input(model, ai_goes_first = True):
                 print("Invalid move. Try again")
                 continue
             if env.canPlay(move):
-                tmp_state, reward, done = env.play(move)
+                _, reward, done = env.play(move)
                 break
             else:
                 print("Invalid move. Try again")
@@ -37,13 +39,17 @@ def play_input(model, ai_goes_first = True):
         if not done:
             response = model.move(env)
             print(response)
-            env.play(response)
+            _, reward, done = env.play(response)
         
-        if reward == 1:
-            print("Player 1 Wins")
-        elif reward == -1:
-            print("Player 2 Wins")
+        # not an else
+        if done:
+            if reward == 1:
+                print("Player 1 Wins")
+            elif reward == -1:
+                print("Player 2 Wins")
+            else:
+                print("Draw")
 
 #play_input("policy", "connect4PolicyVer4.pth")
 #play_input("Q", "connect4QVer7.pth")
-play_input(RandomPlayer(), None)
+play_input(RandomPlayer(), True)

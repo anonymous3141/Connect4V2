@@ -4,9 +4,9 @@ from .header import *
 
 class RandomPlayer(IModel):
     def __init__(self):
-        pass
-
+        np.random.seed(1)
     def move(self, gameState):
-        assert(not gameState.hasGameEnded())
-        return np.random.choice(gameState.getValidMoves())
+        assert(not gameState.isTerminal())
+        
+        return np.random.choice(gameState.getValidMoves()).item()
 

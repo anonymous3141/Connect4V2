@@ -5,10 +5,7 @@ import copy
 Algorithm Credits to Pascal Pons, very cute code!
 The class is implemented quite like OpenAI gym
 http://blog.gamesolver.org/solving-connect-four/06-bitboard/
-
-
 Summary of callable functions (similar to Gym style)
-
 Getters
 bool isTerminal() - has game ended
 int getResult() - 0 if draw/not done, 1 if p1 win, -1 if p2 win
@@ -22,8 +19,6 @@ bool canPlay(col) - return True iff can play in col
 State changers - return triple ((mask1, mask2, turn), getResult(), isTerminal())
 play(col) - plays in column
 reset()
-
-
 """
 
 class ConnectFour:
@@ -35,7 +30,6 @@ class ConnectFour:
     2  9 16 23 30 37 44
     1  8 15 22 29 36 43
     0  7 14 21 28 35 42
-
     Bits 6,13 ... are always 0
     """
     def __init__(self, state=[]):
@@ -62,7 +56,6 @@ class ConnectFour:
         Our top row buffer comes in handy and we
         only check upwards so invalid lines always
         intersect the top row.
-
         The rough idea is that x&(x<<1)&(x<<2)&(x<<3) being nonzero
         implies there is a vertical 4 in a row and so on
         """
@@ -98,8 +91,7 @@ class ConnectFour:
 
     def isTerminal(self):
         # check if game over
-        topRow = (1<<5)+(1<<12)+(1<<19)+(1<<26)+(1<<33)+(1<<40)+(1<<47)
-        return (topRow == (self.mask2&topRow)) or (self.getResult() != 0)
+        return (self.numMoves == 42) or (self.getResult() != 0)
     
     def getResult(self):
         # return -1 if player 2 won
@@ -120,10 +112,14 @@ class ConnectFour:
         # add stone to column if column empty
         # if column nonempty take column, shift it up by 1
         # and OR with column
-        # does not check for invalid plays
+        # assumes play is valid
+
         if pos&(1<<(7*col)) == 0:
+            # no stone in the column
             return (pos|(1<<(7*col)))
-        pos |= (pos&((1<<(7*col+6))-(1<<(7*col))))<<1
+    
+        column_mask = (1<<(7*col+6))-(1<<(7*col))
+        pos |= (pos&column_mask)<<1
         return pos
 
     def play(self, col):
@@ -133,10 +129,10 @@ class ConnectFour:
         if not self.canPlay(col):
             raise ValueError(f'invalid move {col}')
         
-        move = self.mask2 ^ self.addStone(self.mask2, col)
-        self.mask2 |= move
+        player2mask = self.mask2 ^ self.mask1 
+        self.mask2 = self.addStone(self.mask2, col)
         if self.turn == 1:
-            self.mask1 |= move
+            self.mask1 = player2mask ^ self.mask2
 
         self.numMoves += 1
         self.turn = 3 - self.turn
@@ -161,7 +157,7 @@ class ConnectFour:
         return (self.mask1<<42)+self.mask2
 
     def getValidMoves(self):
-        if self.hasGameEnded() != 0:
+        if self.isTerminal() != 0:
             return []
 
         valid = []
@@ -172,5 +168,3 @@ class ConnectFour:
 
     def getTurn(self):
         return self.turn 
-
-
