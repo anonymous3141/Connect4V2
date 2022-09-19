@@ -136,7 +136,7 @@ class ConnectFour:
 
         self.numMoves += 1
         self.turn = 3 - self.turn
-        return [self.mask1, self.mask2, self.turn], self.getResult(), self.isTerminal()
+        return self.getState(), self.getResult(), self.isTerminal()
 
     def displayBoard(self):
         # display board
@@ -154,7 +154,7 @@ class ConnectFour:
         return copy.deepcopy(self)
 
     def hash(self):
-        return (self.mask1<<42)+self.mask2
+        return (self.mask1<<60)+self.mask2
 
     def getValidMoves(self):
         if self.isTerminal() != 0:

@@ -7,6 +7,5 @@ class RandomPlayer(IModel):
         np.random.seed(1)
     def move(self, gameState):
         assert(not gameState.isTerminal())
-        
         return np.random.choice(gameState.getValidMoves()).item()
 

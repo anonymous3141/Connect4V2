@@ -1,5 +1,6 @@
 from connect4 import ConnectFour
 from models.RandomPlayer import RandomPlayer
+from models.MCTS import MCTSModel
 """
 This file enables benchmarking of agent by manually playing against it
 """
@@ -50,6 +51,4 @@ def play_input(model, ai_goes_first = True):
             else:
                 print("Draw")
 
-#play_input("policy", "connect4PolicyVer4.pth")
-#play_input("Q", "connect4QVer7.pth")
-play_input(RandomPlayer(), True)
+play_input(MCTSModel(), True)
