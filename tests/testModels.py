@@ -31,17 +31,18 @@ def testModel(model, sequence, expectedMoves, nn=None):
         print(f'Accepted, received {res}')
 
     if nn != None:
-        # test backward, prematurely end
+        # test nn backward function, end game irregardless if terminal state
         model.gameOver(env.getResult())
         print('Backprop Ran Successfully')
-        
+
+# set random seed. ONLY DO THIS ONCE!
 np.random.seed(42)
+
 # test OneMoveLookAhead
 testModel(OneMoveLookAhead(), [0,1,0,1,0,1], [0])
 testModel(OneMoveLookAhead(), [0,1,0,1,0,1,2],[1])
 
 # test MCTS
-# just gotta accept some WA np rng is kinda shitty
 testModel(MCTSModel(), [0,1,0,1,0,1], [0])
 testModel(MCTSModel(), [0,1,0,1,0,1,2],[1])
 testModel(MCTSModel(), [0,1,1,2,2,3,2,3,3,0], [3])

@@ -33,8 +33,13 @@ class NNModel(IModel):
                     best_move = move 
                     best_move_score = move_score 
             
-            gameState.play(best_move)
+            # append both input state and state after chosen move
             self.gameStates.append(gameState)
+            dup = gameState.duplicate()
+            dup.play(best_move)
+            self.gameStates.append(dup)
+
+            # return best move
             return best_move 
             
     
@@ -51,8 +56,9 @@ class NNModel(IModel):
         for i in range(len(self.gameStates)-1):
             ground_truth.append(ground_truth[-1]*DISCOUNT_FACTOR)
         
-        outputs = self.position_scorer(torch.tensor(training_input).double()).squeeze(0)
+        outputs = self.position_scorer(torch.tensor(training_input).double()).squeeze(-1)
         loss = LOSS_FN(outputs, torch.tensor(ground_truth[::-1]).double()) # compute loss
+        #print(outputs, torch.tensor(ground_truth[::-1]).double())
         loss.backward() # generate gradients
         self.optimizer.step() # make a optimization step
 

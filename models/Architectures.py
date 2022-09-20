@@ -31,6 +31,9 @@ as you did before so that information isnt lost
 64 4 by 4 conv filters + 64 2 by 2 conv filters
 + 1 fully connected layer of 64 + output layer
 
+A final tanh maps all inputs to [-1,1]
+(also good for amplifying changes near centre of spectrum)
+
 Cost = 4*4*2*64 + 2*2*64*64 + 3*2*64*64 + 64
 approx = 43000 params
 
@@ -54,7 +57,8 @@ class Architecture1(nn.Module):
                                       nn.ReLU(),
                                       nn.Linear(NUM_NODES,NUM_NODES),
                                       nn.ReLU(),
-                                      nn.Linear(NUM_NODES, 1))
+                                      nn.Linear(NUM_NODES, 1),
+                                      nn.Tanh())
   def forward(self, x):
     return self.linear_stack(self.feature_stack(x))
 
@@ -69,6 +73,7 @@ class Architecture2(nn.Module):
                                       nn.Flatten(start_dim=1, end_dim=-1))
     self.linear_stack = nn.Sequential(nn.Linear(NUM_NODES * 2 * 3,NUM_NODES),
                                       nn.ReLU(),
-                                      nn.Linear(NUM_NODES, 1))
+                                      nn.Linear(NUM_NODES, 1),
+                                      nn.Tanh())
   def forward(self, x):
     return self.linear_stack(self.feature_stack(x))

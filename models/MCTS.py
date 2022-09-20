@@ -3,7 +3,10 @@ from .IModel import IModel
 from .RandomPlayer import RandomPlayer
 from .OneMoveLookAhead import OneMoveLookAhead
 
-NUM_MCTS_ITERATIONS = 250 # num simulations
+DEFAULT_NUM_MCTS_ITERATIONS = 250 # num simulations
+
+# Baseline solution: Used to pretrain neural nets
+# I lost to this (250 iteration version) while actually trying lmao
 
 class Node:
     """
@@ -68,8 +71,9 @@ class MCTSModel(IModel):
     """
     rollout() -> execute rollout policy
     """
-    def __init__(self):
-        pass
+    def __init__(self, num_its = DEFAULT_NUM_MCTS_ITERATIONS):
+        self.NUM_ITERATIONS = num_its
+    
     def rollout(self, gameState):
         # input: gameState is copy of cur game state
         # use randomised rollout to simulate game state
@@ -82,7 +86,7 @@ class MCTSModel(IModel):
     
     def move(self, gameState):
         root = Node(gameState, None, None)
-        for _ in range(NUM_MCTS_ITERATIONS):
+        for _ in range(self.NUM_ITERATIONS):
             # Execute one MCTS pass per loop iteration
 
             curNode = root # pointer

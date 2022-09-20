@@ -20,7 +20,6 @@ def play_input(model, ai_goes_first = True):
         
     while not done:
         env.displayBoard()
-        print(env.turn, env.numMoves, env.mask1, env.mask2)
         move = -1
         while True:
             move = input("Make a move (cols 0-6): ")
