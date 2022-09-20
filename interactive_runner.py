@@ -23,8 +23,6 @@ def play_input(model, ai_goes_first = True):
         print(env.turn, env.numMoves, env.mask1, env.mask2)
         move = -1
         while True:
-            #print("AI Suggested move:")
-            #print(get_move(model_type, model, state))
             move = input("Make a move (cols 0-6): ")
 
             try:

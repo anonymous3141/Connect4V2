@@ -9,7 +9,7 @@ from connect4 import ConnectFour
 Unit Tests
 """
 
-def testSequence(sequence,display=True):
+def testSequence(sequence,display=True,checkNPConversion=False):
     print('-----------')
     print('Running sequence', sequence)
     x = ConnectFour()
@@ -17,7 +17,10 @@ def testSequence(sequence,display=True):
         x.play(sequence[i])
         if i != len(sequence)-1:
             assert(not(x.getResult() or x.isTerminal()))
-    if display: x.displayBoard()
+    if display: 
+        x.displayBoard()
+    if checkNPConversion:
+        print(x.toNPArray())
     print(x.isTerminal(), x.getResult())
     print(x.numMoves, x.turn, x.mask1, x.mask2)
 
@@ -70,3 +73,6 @@ def testCanPlaySequence(sequence, expect):
         if x.canPlay(i) != expect[i]:
             print('Error', i)
 testCanPlaySequence([0,0,0,0,0,0,6,6,6,6,6,6],[0,1,1,1,1,1,0])
+
+# Test NP array conversion
+testSequence([0,1,1,2,2,3,2,3,3,0,3], False, True) # player 1 diagonal win

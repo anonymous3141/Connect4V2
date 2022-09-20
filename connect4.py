@@ -1,6 +1,4 @@
-import numpy as np 
-import copy
-
+import numpy as np
 """
 Algorithm Credits to Pascal Pons, very cute code!
 The class is implemented quite like OpenAI gym
@@ -15,6 +13,7 @@ int hash() - return hash of board
 void displayBoard() - 
 ConnectFour duplicate() - returns copy of board
 bool canPlay(col) - return True iff can play in col
+toNPArray() - returns board converted into np array (2,6,7), the NN format
 
 State changers - return triple ((mask1, mask2, turn), getResult(), isTerminal())
 play(col) - plays in column
@@ -151,7 +150,7 @@ class ConnectFour:
     
     def duplicate(self):
         # duplicate state
-        return copy.deepcopy(self)
+        return ConnectFour(self.getState())
 
     def hash(self):
         return (self.mask1<<60)+self.mask2
@@ -168,3 +167,13 @@ class ConnectFour:
 
     def getTurn(self):
         return self.turn 
+    
+    def toNPArray(self):
+        # res[0,:] = player 1's stones
+        # res[1,:] = player 2's stones
+        res = np.zeros((2,6,7))
+        for player in [1,2]:
+            for r in range(6):
+                for c in range(7):
+                    res[player-1][r][c] = self.get(r,c) == player 
+        return res

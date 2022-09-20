@@ -1,8 +1,10 @@
 import numpy as np
-from .header import *
 from .IModel import IModel
 from .RandomPlayer import RandomPlayer
 from .OneMoveLookAhead import OneMoveLookAhead
+
+NUM_MCTS_ITERATIONS = 250 # num simulations
+
 class Node:
     """
     Node in Search Tree
@@ -66,7 +68,7 @@ class MCTSModel(IModel):
     rollout() -> execute rollout policy
     """
     def __init__(self):
-        np.random.seed(0)
+        np.random.seed(42)
     
     def rollout(self, gameState):
         # input: gameState is copy of cur game state
