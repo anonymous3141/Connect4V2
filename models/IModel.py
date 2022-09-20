@@ -1,7 +1,8 @@
 class IModel:
     def __init__(self):
         pass
-
+    
+    # gameState should be a copy of current gameState
     def move(self, gameState):
         pass
     

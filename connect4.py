@@ -15,7 +15,7 @@ ConnectFour duplicate() - returns copy of board
 bool canPlay(col) - return True iff can play in col
 toNPArray() - returns board converted into np array (2,6,7), the NN format
 
-State changers - return triple ((mask1, mask2, turn), getResult(), isTerminal())
+State changers - return triple ((mask1, mask2, numMoves), getResult(), isTerminal())
 play(col) - plays in column
 reset()
 """
@@ -34,20 +34,18 @@ class ConnectFour:
     def __init__(self, state=[]):
         self.mask1 = 0 #player 1's stones
         self.mask2 = 0 #everyone's stones
-        self.turn = 1
         self.numMoves = 0
 
         if len(state):
             self.mask1 = state[0]
             self.mask2 = state[1]
-            self.turn = state[2]
+            self.numMoves = state[2]
     
     def reset(self):
         self.mask1 = 0
         self.mask2 = 0
-        self.turn = 1
         self.numMoves = 0
-        return [0,0,1] #mask1, mask2, 1
+        return [0,0,0] #mask1, mask2, 1
     
     def checkAlignment(self, x):
         """
@@ -130,11 +128,10 @@ class ConnectFour:
         
         player2mask = self.mask2 ^ self.mask1 
         self.mask2 = self.addStone(self.mask2, col)
-        if self.turn == 1:
+        if self.getTurn() == 1:
             self.mask1 = player2mask ^ self.mask2
 
         self.numMoves += 1
-        self.turn = 3 - self.turn
         return self.getState(), self.getResult(), self.isTerminal()
 
     def displayBoard(self):
@@ -146,7 +143,7 @@ class ConnectFour:
         print('-----------')
 
     def getState(self):
-        return [self.mask1, self.mask2, self.turn]
+        return [self.mask1, self.mask2, self.numMoves]
     
     def duplicate(self):
         # duplicate state
@@ -166,7 +163,10 @@ class ConnectFour:
         return valid
 
     def getTurn(self):
-        return self.turn 
+        if self.numMoves & 1:
+            return 2
+        else:
+            return 1
     
     def toNPArray(self):
         # res[0,:] = player 1's stones

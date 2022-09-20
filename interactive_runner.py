@@ -37,7 +37,7 @@ def play_input(model, ai_goes_first = True):
                 print("Invalid move. Try again")
 
         if not done:
-            response = model.move(env)
+            response = model.move(env.duplicate())
             print(response)
             _, reward, done = env.play(response)
         

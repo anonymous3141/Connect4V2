@@ -22,7 +22,7 @@ def testSequence(sequence,display=True,checkNPConversion=False):
     if checkNPConversion:
         print(x.toNPArray())
     print(x.isTerminal(), x.getResult())
-    print(x.numMoves, x.turn, x.mask1, x.mask2)
+    print(x.numMoves, x.getTurn(), x.mask1, x.mask2)
 
 # test basic functionality
 testSequence([1,1,1,1,1,1])
@@ -52,7 +52,7 @@ diagonal_test_yellow = '4534332222'
 seq3 = [int(c)-1 for c in diagonal_test_yellow]
 testSequence(seq3)
 
-# test duplicate
+# test duplicate & getTurn()
 def testDup():
     env = ConnectFour()
     env.play(0)

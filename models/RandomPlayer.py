@@ -3,7 +3,7 @@ import numpy as np
 
 class RandomPlayer(IModel):
     def __init__(self):
-        np.random.seed(42)
+        pass
     def move(self, gameState):
         assert(not gameState.isTerminal())
         return np.random.choice(gameState.getValidMoves()).item()

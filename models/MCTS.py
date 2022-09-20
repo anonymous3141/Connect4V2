@@ -30,10 +30,11 @@ class Node:
         # epsilon greedy
         # implicitly contains randomised rollout policy upon reaching 
         # leaf of the expanded tree
-        if np.random.uniform() < EPS_MCTS:
+        if np.random.random()  < EPS_MCTS:
             # np.random_choice not always trusted
             # e.g 1 and 6 are never picked if seed = 0
             self.ptr = (self.ptr + 1) % len(self.validMoves)
+            #print(self.ptr)
             return self.validMoves[self.ptr]
         
         bestMoves = [self.validMoves[0]]
@@ -68,8 +69,7 @@ class MCTSModel(IModel):
     rollout() -> execute rollout policy
     """
     def __init__(self):
-        np.random.seed(42)
-    
+        pass
     def rollout(self, gameState):
         # input: gameState is copy of cur game state
         # use randomised rollout to simulate game state

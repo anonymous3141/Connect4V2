@@ -3,7 +3,7 @@ import numpy as np
 
 class OneMoveLookAhead(IModel):
     def __init__(self):
-        np.random.seed(42)
+        pass
     
     def move(self, gameState):
         # plays winning move if able

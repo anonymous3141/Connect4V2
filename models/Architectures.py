@@ -47,7 +47,7 @@ class Architecture1(nn.Module):
 
   def __init__(self):
     super(Architecture1, self).__init__() 
-    self.feature_stack = nn.Sequential(nn.Conv2d(2,NUM_NODES,4),
+    self.feature_stack = nn.Sequential(nn.Conv2d(2,NUM_NODES,4), #in channels, out channels, filter size
                                       nn.ReLU(inplace=True),
                                       nn.Flatten(start_dim=1, end_dim=-1))
     self.linear_stack = nn.Sequential(nn.Linear(NUM_NODES * 3 * 4,NUM_NODES),
