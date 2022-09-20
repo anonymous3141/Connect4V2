@@ -15,28 +15,35 @@ class Node:
     def __init__(self, state, parent, action):
         self.state = state.duplicate()
         self.W = [0]*7 # score per action
-        self.N = [0]*7 # num passes on node
+        self.N = [1]*7 # num passes on node,  kind of laplace smoothed I guess
         self.action_taken = action # action to get to node
         self.successors = [None]*7
         self.parent = parent
         self.isTerminal = self.state.isTerminal()
         self.validMoves = state.getValidMoves()
+        self.ptr = 0
        
         
-    def selectAction(self, EPS_MCTS = 0):
+    def selectAction(self, EPS_MCTS = 0.2):
         # epsilon greedy
         # implicitly contains randomised rollout policy upon reaching 
         # leaf of the expanded tree
-        if np.random.random() < EPS_MCTS:
-            return np.random.choice(self.validMoves).item()
+        if np.random.uniform() < EPS_MCTS:
+            # np.random_choice not always trusted
+            # e.g 1 and 6 are never picked if seed = 0
+            self.ptr = (self.ptr + 1) % len(self.validMoves)
+            return self.validMoves[self.ptr]
         
         bestMoves = [self.validMoves[0]]
 
-        for move in self.validMoves:
-            if self.N[move] * self.W[bestMoves[0]] > self.N[bestMoves[0]] * self.W[move]:
+        # maximise if turn = 1, minimise if turn = 2
+        sign = 1 if self.state.getTurn() == 1 else -1
+        for move in self.validMoves[1:]:
+            if sign * self.N[move] * self.W[bestMoves[0]] < sign * self.N[bestMoves[0]] * self.W[move]:
                 bestMoves = [move]
             elif self.N[move] * self.W[bestMoves[0]] == self.N[bestMoves[0]] * self.W[move]:
                 bestMoves.append(move)
+        #print(bestMoves, self.N, self.W)
         return np.random.choice(bestMoves).item()
 
     def updAction(self, action, result):
@@ -98,7 +105,7 @@ class MCTSModel(IModel):
                 curNode.updAction(last_action, result)
                 last_action = curNode.action_taken
                 curNode = curNode.parent
-        
+        #print(root.N, root.W, root.validMoves)
         return root.selectAction(EPS_MCTS=0) # take best action
                     
                             

@@ -7,6 +7,7 @@ class OneMoveLookAhead(IModel):
         np.random.seed(1)
     
     def move(self, gameState):
+        # plays winning move if able
         assert(not gameState.isTerminal())
         for i in range(7):
             if gameState.canPlay(i):
