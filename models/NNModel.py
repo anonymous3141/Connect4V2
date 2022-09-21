@@ -12,56 +12,84 @@ class NNModel(IModel):
         self.position_scorer = None
         self.optimizer = None
         self.gameStates = []
+        self.gameStateValues = []
+        self.gameNumber = 0
 
-    def set_position_scorer(self, model):
+    def set_position_scorer(self, model, filename = ""):
         self.position_scorer = model.double()
+
+        if filename != "":
+            self.position_scorer.load_state_dict(torch.load(filename))
         self.optimizer = torch.optim.Adam(\
             self.position_scorer.parameters(),\
             lr = LEARNING_RATE)
 
-    def move(self, gameState):
-        # input: duplicated gameState
-        with torch.inference_mode():
-            best_move = -1
-            best_move_score = -100000
-            turn_sign = 1 if gameState.getTurn() == 1 else -1 # p1 maximise, p2 minimise
-            for move in gameState.getValidMoves():
-                newState = gameState.duplicate()
-                newState.play(move)
-                move_score = self.position_scorer(torch.tensor(newState.toNPArray()).unsqueeze(0).double())
-                if turn_sign * move_score > turn_sign * best_move_score: # minimax
-                    best_move = move 
-                    best_move_score = move_score 
-            
-            # append both input state and state after chosen move
-            self.gameStates.append(gameState)
-            dup = gameState.duplicate()
-            dup.play(best_move)
-            self.gameStates.append(dup)
+    # exploration-exploitation parameter
 
-            # return best move
-            return best_move 
+    def move(self, gameState, eps = 0):
+        # input: duplicated gameState
+        best_move = -1
+        if np.random.random() < eps:
+            best_move = np.random.choice(gameState.getValidMoves()).item()
+        else:
+            with torch.inference_mode():
+                turn_sign = 1 if gameState.getTurn() == 1 else -1 # p1 maximise, p2 minimise
+                best_move_score = -turn_sign # minimax
+                
+                for move in gameState.getValidMoves():
+                    newState = gameState.duplicate()
+                    newState.play(move)
+                    move_score = self.position_scorer(torch.tensor(newState.toNPArray()).unsqueeze(0).double()).item()
+                    #
+                    # print(move_score)
+                    if turn_sign * move_score > turn_sign * best_move_score: # minimax
+                        best_move = move 
+                        best_move_score = move_score 
             
-    
+        # append both input state and state after chosen move
+        self.gameStates.append(gameState)
+        dup = gameState.duplicate()
+        dup.play(best_move)
+        self.gameStates.append(dup)
+
+        # return best move
+        return best_move 
+
+    # sometimes need to add a terminal state if opponent makes last move    
+    def addTerminalState(self, gameState):
+        self.gameStates.append(gameState)
+
     # apply backprop to list of cached data
-    def gameOver(self, reward):
+    def gameOver(self, reward, bootstrapping=False):
         # apply exponentially weighted final reward as a ground truth
         # single batch
         training_input = np.zeros((len(self.gameStates), 2, 6, 7))
-        ground_truth = [reward]
+        ground_truth = []
 
         for i in range(len(self.gameStates)):
             training_input[i,:] = self.gameStates[i].toNPArray() # np syntax nice
         
-        for i in range(len(self.gameStates)-1):
-            ground_truth.append(ground_truth[-1]*DISCOUNT_FACTOR)
-        
         outputs = self.position_scorer(torch.tensor(training_input).double()).squeeze(-1)
-        loss = LOSS_FN(outputs, torch.tensor(ground_truth[::-1]).double()) # compute loss
+        
+        if bootstrapping == False:
+            # use monte carlo learning to generate targets
+            ground_truth.append(reward)
+            for i in range(len(self.gameStates)-1):
+                ground_truth.append(ground_truth[-1]*DISCOUNT_FACTOR)
+            ground_truth = ground_truth[::-1] #reverse
+        else:
+            # use the on policy variant of the TD(0) algorithm, i.e SARSA
+            # change target to be 'optimal successor' according to cur policy
+            ground_truth = [outputs[i+1].item() for i in range(len(self.gameStates)-1)]
+            ground_truth.append(reward)
+        
+        loss = LOSS_FN(outputs, torch.tensor(ground_truth).double()) # compute loss
         #print(outputs, torch.tensor(ground_truth[::-1]).double())
         loss.backward() # generate gradients
+        self.gameStates.clear()
         self.optimizer.step() # make a optimization step
 
     # save neural net model
     def save(self, filename):
         torch.save(self.position_scorer.state_dict(), filename)
+    

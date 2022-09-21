@@ -1,7 +1,10 @@
 from connect4 import ConnectFour
+from models.Architectures import Architecture1
 from models.OneMoveLookAhead import OneMoveLookAhead
 from models.RandomPlayer import RandomPlayer
 from models.MCTS import MCTSModel
+from models.NNModel import NNModel
+import torch
 """
 This file enables benchmarking of agent by manually playing against it
 """
@@ -49,4 +52,14 @@ def play_input(model, ai_goes_first = True):
             else:
                 print("Draw")
 
+
 play_input(MCTSModel(), True)
+"""
+nn = Architecture1()
+nn.load_state_dict(torch.load("arch1-v1.pth"))
+
+
+model = NNModel()
+model.set_position_scorer(nn)
+play_input(model, True)
+"""

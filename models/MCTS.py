@@ -3,8 +3,6 @@ from .IModel import IModel
 from .RandomPlayer import RandomPlayer
 from .OneMoveLookAhead import OneMoveLookAhead
 
-DEFAULT_NUM_MCTS_ITERATIONS = 250 # num simulations
-
 # Baseline solution: Used to pretrain neural nets
 # I lost to this (250 iteration version) while actually trying lmao
 
@@ -26,19 +24,13 @@ class Node:
         self.parent = parent
         self.isTerminal = self.state.isTerminal()
         self.validMoves = state.getValidMoves()
-        self.ptr = 0
-       
         
     def selectAction(self, EPS_MCTS = 0.2):
         # epsilon greedy
         # implicitly contains randomised rollout policy upon reaching 
         # leaf of the expanded tree
         if np.random.random()  < EPS_MCTS:
-            # np.random_choice not always trusted
-            # e.g 1 and 6 are never picked if seed = 0
-            self.ptr = (self.ptr + 1) % len(self.validMoves)
-            #print(self.ptr)
-            return self.validMoves[self.ptr]
+            return np.random.choice(self.validMoves).item()
         
         bestMoves = [self.validMoves[0]]
 
@@ -71,7 +63,7 @@ class MCTSModel(IModel):
     """
     rollout() -> execute rollout policy
     """
-    def __init__(self, num_its = DEFAULT_NUM_MCTS_ITERATIONS):
+    def __init__(self, num_its = 250):
         self.NUM_ITERATIONS = num_its
     
     def rollout(self, gameState):
