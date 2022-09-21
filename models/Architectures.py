@@ -49,12 +49,12 @@ class Architecture1(nn.Module):
   def __init__(self, NUM_NODES=64):
     super(Architecture1, self).__init__() 
     self.feature_stack = nn.Sequential(nn.Conv2d(2,NUM_NODES,4), #in channels, out channels, filter size
-                                      nn.ReLU(inplace=True),
+                                      nn.LeakyReLU(inplace=True),
                                       nn.Flatten(start_dim=1, end_dim=-1))
     self.linear_stack = nn.Sequential(nn.Linear(NUM_NODES * 3 * 4,NUM_NODES),
-                                      nn.ReLU(),
+                                      nn.LeakyReLU(),
                                       nn.Linear(NUM_NODES,NUM_NODES),
-                                      nn.ReLU(),
+                                      nn.LeakyReLU(),
                                       nn.Linear(NUM_NODES, 1),
                                       nn.Tanh())
   def forward(self, x):
@@ -65,12 +65,12 @@ class Architecture2(nn.Module):
   def __init__(self, NUM_NODES=64):
     super(Architecture2, self).__init__() 
     self.feature_stack = nn.Sequential(nn.Conv2d(2,NUM_NODES,4),
-                                      nn.ReLU(inplace=True),
+                                      nn.LeakyReLU(inplace=True),
                                       nn.Conv2d(NUM_NODES,NUM_NODES,2),
-                                      nn.ReLU(inplace=True),
+                                      nn.LeakyReLU(inplace=True),
                                       nn.Flatten(start_dim=1, end_dim=-1))
     self.linear_stack = nn.Sequential(nn.Linear(NUM_NODES * 2 * 3,NUM_NODES),
-                                      nn.ReLU(),
+                                      nn.LeakyReLU(),
                                       nn.Linear(NUM_NODES, 1),
                                       nn.Tanh())
   def forward(self, x):

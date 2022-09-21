@@ -4,7 +4,7 @@ from .IModel import IModel
 import numpy as np
 
 DISCOUNT_FACTOR = 0.9
-LEARNING_RATE = 0.0003
+LEARNING_RATE = 0.0001
 LOSS_FN = nn.MSELoss()
 
 class NNModel(IModel):
@@ -14,7 +14,6 @@ class NNModel(IModel):
         self.gameStates = []
         self.gameStateValues = []
         self.gameNumber = 0
-
     def set_position_scorer(self, model, filename = ""):
         self.position_scorer = model.double()
 
@@ -22,26 +21,25 @@ class NNModel(IModel):
             self.position_scorer.load_state_dict(torch.load(filename))
         self.optimizer = torch.optim.Adam(\
             self.position_scorer.parameters(),\
-            lr = LEARNING_RATE)
+            lr = LEARNING_RATE, weight_decay=0.001)
 
     # exploration-exploitation parameter
 
     def move(self, gameState, eps = 0):
-        # input: duplicated gameState
+        # input: duplicated gameState, eps for eps greedy
         best_move = -1
         if np.random.random() < eps:
             best_move = np.random.choice(gameState.getValidMoves()).item()
         else:
             with torch.inference_mode():
                 turn_sign = 1 if gameState.getTurn() == 1 else -1 # p1 maximise, p2 minimise
-                best_move_score = -turn_sign # minimax
+                best_move_score = -turn_sign*2 # minimax
                 
                 for move in gameState.getValidMoves():
                     newState = gameState.duplicate()
                     newState.play(move)
                     move_score = self.position_scorer(torch.tensor(newState.toNPArray()).unsqueeze(0).double()).item()
-                    #
-                    # print(move_score)
+                    #print(move_score, move, best_move_score)
                     if turn_sign * move_score > turn_sign * best_move_score: # minimax
                         best_move = move 
                         best_move_score = move_score 
@@ -60,9 +58,13 @@ class NNModel(IModel):
         self.gameStates.append(gameState)
 
     # apply backprop to list of cached data
-    def gameOver(self, reward, bootstrapping=False):
+    def gameOver(self, reward, inference_mode = False, bootstrapping=False):
         # apply exponentially weighted final reward as a ground truth
         # single batch
+
+        if inference_mode:
+            self.gameStates.clear()
+            return 
         training_input = np.zeros((len(self.gameStates), 2, 6, 7))
         ground_truth = []
 
@@ -78,10 +80,16 @@ class NNModel(IModel):
                 ground_truth.append(ground_truth[-1]*DISCOUNT_FACTOR)
             ground_truth = ground_truth[::-1] #reverse
         else:
-            # use the on policy variant of the TD(0) algorithm, i.e SARSA
+            # use the on policy variant of the TD(n) algorithm, i.e SARSA
             # change target to be 'optimal successor' according to cur policy
-            ground_truth = [outputs[i+1].item() for i in range(len(self.gameStates)-1)]
-            ground_truth.append(reward)
+            ground_truth = [0] * len(self.gameStates)
+            ground_truth[-1] = reward
+            N = 15
+            for i in range(len(self.gameStates)-2, -1, -1):
+                if i+N>=len(self.gameStates):
+                    ground_truth[i] = reward*(DISCOUNT_FACTOR**(len(self.gameStates)-i))
+                else:
+                    ground_truth[i] = outputs[i+N]*(DISCOUNT_FACTOR**(N-i))
         
         loss = LOSS_FN(outputs, torch.tensor(ground_truth).double()) # compute loss
         #print(outputs, torch.tensor(ground_truth[::-1]).double())

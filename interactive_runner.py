@@ -53,13 +53,12 @@ def play_input(model, ai_goes_first = True):
                 print("Draw")
 
 
-play_input(MCTSModel(), True)
-"""
-nn = Architecture1()
-nn.load_state_dict(torch.load("arch1-v1.pth"))
+#play_input(MCTSModel(), True)
+#"""
+nn = Architecture1(100)
 
 
 model = NNModel()
-model.set_position_scorer(nn)
+model.set_position_scorer(nn, "param_files/arc1-100-exponential.pth")
 play_input(model, True)
-"""
+#"""

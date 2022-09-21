@@ -97,8 +97,6 @@ class MCTSModel(IModel):
                 curNode = curNode.parent
             result = self.rollout(curNode.successors[last_action].state.duplicate())
             
-            
-            
             while curNode != None:
                 curNode.updAction(last_action, result)
                 last_action = curNode.action_taken
