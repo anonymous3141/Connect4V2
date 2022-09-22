@@ -1,3 +1,4 @@
+from ast import Pass
 import torch
 import torch.nn as nn
 from .IModel import IModel
@@ -80,17 +81,13 @@ class NNModel(IModel):
                 ground_truth.append(ground_truth[-1]*DISCOUNT_FACTOR)
             ground_truth = ground_truth[::-1] #reverse
         else:
-            # use the on policy variant of the TD(n) algorithm, i.e SARSA
-            # change target to be 'optimal successor' according to cur policy
-            ground_truth = [0] * len(self.gameStates)
-            ground_truth[-1] = reward
-            N = 15
-            for i in range(len(self.gameStates)-2, -1, -1):
-                if i+N>=len(self.gameStates):
-                    ground_truth[i] = reward*(DISCOUNT_FACTOR**(len(self.gameStates)-i))
-                else:
-                    ground_truth[i] = outputs[i+N]*(DISCOUNT_FACTOR**(N-i))
-        
+            """
+            TODO: 
+            https://www.cs.toronto.edu/~duvenaud/courses/csc2541/slides/model-based-RL-deepmind.pdf
+            Keep old version of network for computing ground truth:max V_old(successors)
+            """
+            pass 
+
         loss = LOSS_FN(outputs, torch.tensor(ground_truth).double()) # compute loss
         #print(outputs, torch.tensor(ground_truth[::-1]).double())
         loss.backward() # generate gradients
