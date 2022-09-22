@@ -85,6 +85,7 @@ class NNModel(IModel):
             TODO: 
             https://www.cs.toronto.edu/~duvenaud/courses/csc2541/slides/model-based-RL-deepmind.pdf
             Keep old version of network for computing ground truth:max V_old(successors)
+            No targetting = too unstable, and using max is more stable I guess
             """
             pass 
 
