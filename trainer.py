@@ -1,6 +1,8 @@
 from connect4 import ConnectFour
 from models.OneMoveLookAhead import OneMoveLookAhead
 from models.NNModel import NNModel
+
+from copy import deepcopy
 import numpy as np
 
 
@@ -18,13 +20,21 @@ REPEAT N times:
     DECAY LEARNING RATE
     ADD CURRENT AGENT TO OPPONENT LIST
 
+baseline params:
+N = 5
+M = 20K
+LR0 = 0.0001, SGD optimiser
+EPS0 = 0.1, decaying down to 0.01 throughout course of each game
+DECAY LR = halve after each iteration
+DECAY EPS = exponential schedule
+
 """
 
 class Trainer:
     def __init__(self, performance_file, params_file, nn_object,
         baselines = [OneMoveLookAhead()], pretrained_model = "", 
         bootstrap = False, num_its=1, num_games=10000,
-         min_eps=0.01, max_eps=1, init_learn_rate = 0.0001):
+         min_eps=0.01, max_eps=1, init_learn_rate = 0.001):
 
         self.NUM_TRAIN_GAMES = num_games
         self.opponents = baselines
@@ -39,7 +49,7 @@ class Trainer:
         self.MAX_EPS = max_eps
         self.MIN_EPS = min_eps
         self.THRESHOLD = 0.8
-        self.decay = (self.MIN_EPS/self.MAX_EPS)**(1/(self.THRESHOLD * num_games))
+        self.decay = (self.MIN_EPS/self.MAX_EPS)**(1/(self.THRESHOLD * num_games * num_its))
 
 
         self.bootstrap = bootstrap
@@ -48,12 +58,12 @@ class Trainer:
         # run the training loop for one game
         nn_goes_first = np.random.random() < 0.5
         env = ConnectFour()
-
-        if inference_mode:
-            eps = 0
         
         if nn_goes_first: 
             env.play(self.modelToTrain.move(env.duplicate(), eps))
+        else:
+            # todo: add empty state to board
+            pass
         
         while not env.isTerminal():
             env.play(opponent.move(env.duplicate()))
@@ -64,7 +74,7 @@ class Trainer:
                 self.modelToTrain.addTerminalState(env.duplicate())
         
         self.modelToTrain.gameOver(env.getResult(), inference_mode, self.bootstrap)
-        self.baseline.gameOver(env.getResult()) # todo: this can be selfplay
+        opponent.gameOver(env.getResult(), True) 
         
         # return 1 if model won, 1/2 if draw, 0 if baseline won
         sign = -(-1)**(nn_goes_first)
@@ -78,24 +88,34 @@ class Trainer:
     
     def trainLoop(self):
         results = []
-        BENCHMARK = 100
+        BENCHMARK_SIZE = 100
         DEBUG = True
-        LR_DECAY = 0.8
+        LR_DECAY = 0.5
+        LR_CUR = self.init_learn_rate
         eps = self.MAX_EPS
         for it in range(self.num_its):
             for i in range(self.NUM_TRAIN_GAMES):
-                if DEBUG and i%BENCHMARK == 0 and i >= BENCHMARK:
-                    print(f"It {i}: Model {it} won {sum(results[-BENCHMARK:])} of last {BENCHMARK} points")
+                if i%BENCHMARK_SIZE == 0:
+                    print(f"It{i} of {self.NUM_TRAIN_GAMES}")
                 eps = max(self.MIN_EPS, eps * self.decay)
-                results.append(self.runOneGame(eps))
+                self.runOneGame(np.random.choice(self.opponents), eps)
+
+            res = 0
+            for i in range(BENCHMARK_SIZE):
+                res += self.runOneGame(self.opponents[-1], 0.02, True)
+            print(f"Final result: Won {res} out of {BENCHMARK_SIZE} points against last model")
+            
+            self.opponents.append(deepcopy(self.modelToTrain))
+            LR_CUR *= LR_DECAY 
+            new_model = NNModel(LR_CUR)
+            new_model.set_position_scorer(self.modelToTrain.position_scorer)
+            self.modelToTrain = new_model 
+        
 
         self.modelToTrain.save(self.MODEL_PARAMS_FILE)
         open(self.MODEL_PERFORMANCE_FILE, "w").write(\
             " ".join([str(c) for c in results]))
         
-        res = 0
-        for i in range(BENCHMARK):
-            res += self.runOneGame(0, True)
-        print(f"Final result: Won {res} out of {BENCHMARK} points against baseline")
+       
 
 

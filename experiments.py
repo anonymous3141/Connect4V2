@@ -4,50 +4,15 @@ from models.MCTS import MCTSModel
 from models.NNModel import NNModel
 from models.OneMoveLookAhead import OneMoveLookAhead
 from models.Architectures import *
+opponent1 = OneMoveLookAhead()
+opponent2 = MCTSModel(50)
+opponent3 = NNModel()
+opponent3.set_position_scorer(Architecture1(100), "param_files/arc1-100-exponential.pth")
 
-# compare 4 architectures to figure best one out
-# use default params (0.01 min eps, 10k games)
-NUM_GAMES = 50000
-"""
-experiment1 = Trainer("results_log/arch1-32v1.txt",\
-     "param_files/arc1-32v1.pth", Architecture1(32),NUM_GAMES,False)
+opponents = [opponent1, opponent2, opponent3]
 
-experiment2 = Trainer("results_log/arch1-64v1.txt",\
-     "param_files/arc1-64v1.pth", Architecture1(64),NUM_GAMES)
-experiment3 = Trainer("results_log/arch2-32v1.txt",\
-     "param_files/arc2-32v1.pth", Architecture2(32),NUM_GAMES)
-experiment4 = Trainer("results_log/arch2-64v1.txt",\
-     "param_files/arc2-64v1.pth", Architecture2(64),NUM_GAMES)
-experiment5 = Trainer("results_log/arch1-100-exponential-bootstrap.txt",\
-     "param_files/arc1-100-exponential-bootstrap.pth", Architecture1(100), NUM_GAMES, True)
-experiment5.trainLoop()
-"""
-
-# train not entirely dumb model on harder opponent
-experiment6 = Trainer("results_log/arch1-100-v4.txt",\
-     "param_files/arc1-100-v4.pth", Architecture1(100), NUM_GAMES, True, 0.01, 0.1, MCTSModel(50), "param_files/arc1-100-exponential.pth")
+experiment6 = Trainer("results_log/arch1-100-v5.txt",\
+     "param_files/arc1-100-v5.pth", Architecture1(100), opponents, "param_files/arc1-100-exponential.pth",
+     False, 1, 1000, 0.01, 0.2, 0.0001)
 experiment6.trainLoop()
 
-"""
-experiment2.trainLoop()
-experiment3.trainLoop()
-experiment4.trainLoop()
-"""
-
-#"""
-
-# debug dead neurons
-
-for name, param in experiment2.modelToTrain.position_scorer.named_parameters():
-    if param.requires_grad:
-        print(name, param.data)
-
-X = ConnectFour()
-X.play(1)
-X.play(2)
-X.play(4)
-print(experiment2.modelToTrain.position_scorer(torch.tensor(X.toNPArray()).double().unsqueeze(0)))
-X.play(5)
-#print(torch.tensor(X.toNPArray()).double().unsqueeze(0))
-print(experiment2.modelToTrain.position_scorer(torch.tensor(X.toNPArray()).double().unsqueeze(0)))
-#"""

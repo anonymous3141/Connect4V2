@@ -7,5 +7,5 @@ class IModel:
         pass
     
     # apply backprop etc
-    def gameOver(self, reward):
+    def gameOver(self, reward, inference_mode = False, bootstrapping=False):
         pass

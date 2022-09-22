@@ -7,7 +7,7 @@ DISCOUNT_FACTOR = 0.9
 LOSS_FN = nn.MSELoss()
 
 class NNModel(IModel):
-    def __init__(self, learning_rate = 0.0001):
+    def __init__(self, learning_rate = 0.001):
         self.position_scorer = None
         self.optimizer = None
         self.gameStates = []
@@ -19,14 +19,15 @@ class NNModel(IModel):
 
         if filename != "":
             self.position_scorer.load_state_dict(torch.load(filename))
-        self.optimizer = torch.optim.Adam(\
+        self.optimizer = torch.optim.SGD(\
             self.position_scorer.parameters(),\
             lr = self.learning_rate, weight_decay=0.001)
 
     # exploration-exploitation parameter
 
-    def move(self, gameState, eps = 0):
+    def move(self, gameState, eps = 0.02): 
         # input: duplicated gameState, eps for eps greedy
+        # at inference time: eps is small but nonzero, for a little random
         best_move = -1
         if np.random.random() < eps:
             best_move = np.random.choice(gameState.getValidMoves()).item()
@@ -83,6 +84,7 @@ class NNModel(IModel):
             # use the on policy variant of the TD(n) algorithm, i.e SARSA
             # change target to be 'optimal successor' according to cur policy
             # max of successors is implicit (except when exploration is done)
+            # doesn't work that well as is
             ground_truth = [0] * len(self.gameStates)
             ground_truth[-1] = reward
             N = 15
