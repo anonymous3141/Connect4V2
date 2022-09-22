@@ -82,6 +82,7 @@ class NNModel(IModel):
         else:
             # use the on policy variant of the TD(n) algorithm, i.e SARSA
             # change target to be 'optimal successor' according to cur policy
+            # max of successors is implicit (except when exploration is done)
             ground_truth = [0] * len(self.gameStates)
             ground_truth[-1] = reward
             N = 15

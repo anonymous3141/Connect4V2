@@ -5,20 +5,36 @@ import numpy as np
 
 
 """
-Train models against baseline 
-- currently set up so baseline doesnt learn
+Train models by partial self play in style similar
+to how alpha go is trained
+
+CANDIDATE_OPPONENTS = [SOME BASELINES]
+REPEAT N times:
+    INITIALISE CURRENT AGENT FROM PREVIOUS AGENT PARAMS
+    FOR M LEARNING ITERATIONS
+        DECAY EPSILON
+        USE NAIVE MONTE-CARLO LEARNING:
+            PLAY CURRENT AGENT AGAINST RANDOM PREVIOUS CANDIDATE
+    DECAY LEARNING RATE
+    ADD CURRENT AGENT TO OPPONENT LIST
+
 """
 
 class Trainer:
-    def __init__(self, performance_file, params_file, nn_object,\
-        num_games=10000, bootstrap = False, min_eps=0.01, max_eps=1, baseline = OneMoveLookAhead(), pretrained_model = ""):
+    def __init__(self, performance_file, params_file, nn_object,
+        baselines = [OneMoveLookAhead()], pretrained_model = "", 
+        bootstrap = False, num_its=1, num_games=10000,
+         min_eps=0.01, max_eps=1, init_learn_rate = 0.0001):
+
         self.NUM_TRAIN_GAMES = num_games
-        self.baseline = baseline
+        self.opponents = baselines
         self.modelToTrain = NNModel()
         self.modelToTrain.set_position_scorer(nn_object, pretrained_model)
         self.MODEL_PERFORMANCE_FILE = performance_file # file to log history
         self.MODEL_PARAMS_FILE = params_file # file to save params
-        
+        self.init_learn_rate = init_learn_rate
+        self.num_its = num_its
+
         # epsilon decay, assume > 0
         self.MAX_EPS = max_eps
         self.MIN_EPS = min_eps
@@ -28,7 +44,7 @@ class Trainer:
 
         self.bootstrap = bootstrap
     
-    def runOneGame(self, eps, inference_mode = False):
+    def runOneGame(self, opponent, eps, inference_mode = False):
         # run the training loop for one game
         nn_goes_first = np.random.random() < 0.5
         env = ConnectFour()
@@ -40,7 +56,7 @@ class Trainer:
             env.play(self.modelToTrain.move(env.duplicate(), eps))
         
         while not env.isTerminal():
-            env.play(self.baseline.move(env.duplicate()))
+            env.play(opponent.move(env.duplicate()))
 
             if not env.isTerminal():
                 env.play(self.modelToTrain.move(env.duplicate(), eps))
@@ -64,12 +80,14 @@ class Trainer:
         results = []
         BENCHMARK = 100
         DEBUG = True
+        LR_DECAY = 0.8
         eps = self.MAX_EPS
-        for i in range(self.NUM_TRAIN_GAMES):
-            if DEBUG and i%BENCHMARK == 0 and i >= BENCHMARK:
-                print(f"It {i}: Model won {sum(results[-BENCHMARK:])} of last {BENCHMARK} points")
-            eps = max(self.MIN_EPS, eps * self.decay)
-            results.append(self.runOneGame(eps))
+        for it in range(self.num_its):
+            for i in range(self.NUM_TRAIN_GAMES):
+                if DEBUG and i%BENCHMARK == 0 and i >= BENCHMARK:
+                    print(f"It {i}: Model {it} won {sum(results[-BENCHMARK:])} of last {BENCHMARK} points")
+                eps = max(self.MIN_EPS, eps * self.decay)
+                results.append(self.runOneGame(eps))
 
         self.modelToTrain.save(self.MODEL_PARAMS_FILE)
         open(self.MODEL_PERFORMANCE_FILE, "w").write(\
