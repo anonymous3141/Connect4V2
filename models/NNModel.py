@@ -4,16 +4,16 @@ from .IModel import IModel
 import numpy as np
 
 DISCOUNT_FACTOR = 0.9
-LEARNING_RATE = 0.0001
 LOSS_FN = nn.MSELoss()
 
 class NNModel(IModel):
-    def __init__(self):
+    def __init__(self, learning_rate = 0.0001):
         self.position_scorer = None
         self.optimizer = None
         self.gameStates = []
         self.gameStateValues = []
         self.gameNumber = 0
+        self.learning_rate = learning_rate
     def set_position_scorer(self, model, filename = ""):
         self.position_scorer = model.double()
 
@@ -21,7 +21,7 @@ class NNModel(IModel):
             self.position_scorer.load_state_dict(torch.load(filename))
         self.optimizer = torch.optim.Adam(\
             self.position_scorer.parameters(),\
-            lr = LEARNING_RATE, weight_decay=0.001)
+            lr = self.learning_rate, weight_decay=0.001)
 
     # exploration-exploitation parameter
 

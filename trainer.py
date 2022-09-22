@@ -11,11 +11,11 @@ Train models against baseline
 
 class Trainer:
     def __init__(self, performance_file, params_file, nn_object,\
-        num_games=10000, bootstrap = False, min_eps=0.01, max_eps=1, baseline = OneMoveLookAhead()):
+        num_games=10000, bootstrap = False, min_eps=0.01, max_eps=1, baseline = OneMoveLookAhead(), pretrained_model = ""):
         self.NUM_TRAIN_GAMES = num_games
         self.baseline = baseline
         self.modelToTrain = NNModel()
-        self.modelToTrain.set_position_scorer(nn_object, "")
+        self.modelToTrain.set_position_scorer(nn_object, pretrained_model)
         self.MODEL_PERFORMANCE_FILE = performance_file # file to log history
         self.MODEL_PARAMS_FILE = params_file # file to save params
         

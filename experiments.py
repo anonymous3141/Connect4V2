@@ -7,7 +7,7 @@ from models.Architectures import *
 
 # compare 4 architectures to figure best one out
 # use default params (0.01 min eps, 10k games)
-NUM_GAMES = 10000
+NUM_GAMES = 50000
 """
 experiment1 = Trainer("results_log/arch1-32v1.txt",\
      "param_files/arc1-32v1.pth", Architecture1(32),NUM_GAMES,False)
@@ -18,20 +18,23 @@ experiment3 = Trainer("results_log/arch2-32v1.txt",\
      "param_files/arc2-32v1.pth", Architecture2(32),NUM_GAMES)
 experiment4 = Trainer("results_log/arch2-64v1.txt",\
      "param_files/arc2-64v1.pth", Architecture2(64),NUM_GAMES)
-"""
 experiment5 = Trainer("results_log/arch1-100-exponential-bootstrap.txt",\
      "param_files/arc1-100-exponential-bootstrap.pth", Architecture1(100), NUM_GAMES, True)
 experiment5.trainLoop()
-#experiment6 = Trainer("results_log/arch1-128-exponential.txt",\
-#     "param_files/arc1-128-exponential.pth", Architecture1(128), NUM_GAMES)
-#experiment6.trainLoop()
+"""
+
+# train not entirely dumb model on harder opponent
+experiment6 = Trainer("results_log/arch1-100-v4.txt",\
+     "param_files/arc1-100-v4.pth", Architecture1(100), NUM_GAMES, True, 0.01, 0.1, MCTSModel(50), "param_files/arc1-100-exponential.pth")
+experiment6.trainLoop()
+
 """
 experiment2.trainLoop()
 experiment3.trainLoop()
 experiment4.trainLoop()
 """
 
-"""
+#"""
 
 # debug dead neurons
 
@@ -47,4 +50,4 @@ print(experiment2.modelToTrain.position_scorer(torch.tensor(X.toNPArray()).doubl
 X.play(5)
 #print(torch.tensor(X.toNPArray()).double().unsqueeze(0))
 print(experiment2.modelToTrain.position_scorer(torch.tensor(X.toNPArray()).double().unsqueeze(0)))
-"""
+#"""
