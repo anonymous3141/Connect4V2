@@ -21,7 +21,7 @@ class NNModel(IModel):
             self.position_scorer.load_state_dict(torch.load(filename))
         self.optimizer = torch.optim.SGD(\
             self.position_scorer.parameters(),\
-            lr = self.learning_rate, weight_decay=0.01)
+            lr = self.learning_rate, weight_decay=0.001)
 
     # exploration-exploitation parameter
 

@@ -8,8 +8,8 @@ opponent1 = OneMoveLookAhead()
 
 opponents = [opponent1]
 
-experiment6 = Trainer("results_log/arch1-100-v5.txt",\
-     "param_files/arc1-100-v5.pth", Architecture1(100), opponents, "",
-     False, 5, 5000, 0.01, 1, 0.0001)
+experiment6 = Trainer("results_log/arch1-100-v7.txt",\
+     "param_files/arc1-100-v7.pth", Architecture1(100), opponents, "",
+     False, 2, 10000, 0.075, 1, 0.0001)
 experiment6.trainLoop()
 

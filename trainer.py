@@ -38,7 +38,7 @@ class Trainer:
 
         self.NUM_TRAIN_GAMES = num_games
         self.opponents = baselines
-        self.modelToTrain = NNModel()
+        self.modelToTrain = NNModel(learning_rate=init_learn_rate)
         self.modelToTrain.set_position_scorer(nn_object, pretrained_model)
         self.MODEL_PERFORMANCE_FILE = performance_file # file to log history
         self.MODEL_PARAMS_FILE = params_file # file to save params
@@ -105,10 +105,11 @@ class Trainer:
                 res += self.runOneGame(self.opponents[-1], 0.02, True)
             print(f"Final result: Won {res} out of {BENCHMARK_SIZE} points against last model")
             
-            self.opponents.append(deepcopy(self.modelToTrain))
+            if res/BENCHMARK_SIZE > 0.4:
+                self.opponents.append(deepcopy(self.modelToTrain))
             LR_CUR *= LR_DECAY 
             new_model = NNModel(LR_CUR)
-            new_model.set_position_scorer(self.modelToTrain.position_scorer)
+            new_model.set_position_scorer(deepcopy(self.opponents[-1].position_scorer))
             self.modelToTrain = new_model 
         
 
