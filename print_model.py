@@ -21,7 +21,7 @@ def testGradientsDied(A):
 
 if __name__ == "__main__":
     A = Architecture1(100).double()
-    A.load_state_dict(torch.load("param_files/arc1-100-exponential.pth"))
+    A.load_state_dict(torch.load("param_files/arc1-100-v5.pth"))
     for name, param in A.named_parameters():
         if param.requires_grad:
             print(name, param.data)

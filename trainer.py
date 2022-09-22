@@ -22,7 +22,7 @@ REPEAT N times:
 
 baseline params:
 N = 5
-M = 20K
+M = 10K
 LR0 = 0.0001, SGD optimiser
 EPS0 = 0.1, decaying down to 0.01 throughout course of each game
 DECAY LR = halve after each iteration
@@ -62,9 +62,9 @@ class Trainer:
         if nn_goes_first: 
             env.play(self.modelToTrain.move(env.duplicate(), eps))
         else:
-            # todo: add empty state to board
+            self.modelToTrain.gameStates.append(env.duplicate())
             pass
-        
+
         while not env.isTerminal():
             env.play(opponent.move(env.duplicate()))
 

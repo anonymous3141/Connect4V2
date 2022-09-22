@@ -24,7 +24,6 @@ class Node:
         self.parent = parent
         self.isTerminal = self.state.isTerminal()
         self.validMoves = state.getValidMoves()
-        
     def selectAction(self, EPS_MCTS = 0.2):
         # epsilon greedy
         # implicitly contains randomised rollout policy upon reaching 
@@ -63,15 +62,16 @@ class MCTSModel(IModel):
     """
     rollout() -> execute rollout policy
     """
-    def __init__(self, num_its = 250):
+    def __init__(self, num_its = 250, rollout_policy=OneMoveLookAhead()):
         self.NUM_ITERATIONS = num_its
+        self.rolloutPolicy = rollout_policy
     
     def rollout(self, gameState):
         # input: gameState is copy of cur game state
         # use randomised rollout to simulate game state
         # to end (returns cur result if already terminal state)
         # todo: add 1 move lookahead for insta-wins?
-        player = OneMoveLookAhead()
+        player = self.rolloutPolicy
         while not gameState.isTerminal():
             gameState.play(player.move(gameState))
         return gameState.getResult()

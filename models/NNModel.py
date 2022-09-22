@@ -21,7 +21,7 @@ class NNModel(IModel):
             self.position_scorer.load_state_dict(torch.load(filename))
         self.optimizer = torch.optim.SGD(\
             self.position_scorer.parameters(),\
-            lr = self.learning_rate, weight_decay=0.001)
+            lr = self.learning_rate, weight_decay=0.01)
 
     # exploration-exploitation parameter
 
@@ -71,7 +71,7 @@ class NNModel(IModel):
 
         for i in range(len(self.gameStates)):
             training_input[i,:] = self.gameStates[i].toNPArray() # np syntax nice
-        
+            #print(self.gameStates[i].numMoves)
         outputs = self.position_scorer(torch.tensor(training_input).double()).squeeze(-1)
         
         if bootstrapping == False:
