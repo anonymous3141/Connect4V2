@@ -54,9 +54,10 @@ class Trainer:
 
         self.bootstrap = bootstrap
     
-    def runOneGame(self, opponent, eps, inference_mode = False):
+    def runOneGame(self, opponent, eps, inference_mode = False, nn_goes_first=None):
         # run the training loop for one game
-        nn_goes_first = np.random.random() < 0.5
+        if nn_goes_first == None:
+            nn_goes_first = np.random.random() < 0.5
         env = ConnectFour()
         
         if nn_goes_first: 
@@ -105,7 +106,7 @@ class Trainer:
                 res += self.runOneGame(self.opponents[-1], 0.02, True)
             print(f"Final result: Won {res} out of {BENCHMARK_SIZE} points against last model")
             
-            if res/BENCHMARK_SIZE > 0.4:
+            if res/BENCHMARK_SIZE > 0.4: #increase this to 70%?
                 self.opponents.append(deepcopy(self.modelToTrain))
             LR_CUR *= LR_DECAY 
             new_model = NNModel(LR_CUR)

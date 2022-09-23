@@ -59,6 +59,6 @@ nn = Architecture1(100)
 
 
 model = NNModel()
-model.set_position_scorer(nn, "param_files/arc1-100-v7.pth")
-play_input(model, True)
+model.set_position_scorer(nn, "param_files/arc1-100-v8.pth")
+play_input(model, False)
 #"""

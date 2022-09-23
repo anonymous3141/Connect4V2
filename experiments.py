@@ -4,12 +4,13 @@ from models.MCTS import MCTSModel
 from models.NNModel import NNModel
 from models.OneMoveLookAhead import OneMoveLookAhead
 from models.Architectures import *
+import numpy as np
 opponent1 = OneMoveLookAhead()
 
 opponents = [opponent1]
-
-experiment6 = Trainer("results_log/arch1-100-v7.txt",\
-     "param_files/arc1-100-v7.pth", Architecture1(100), opponents, "",
-     False, 2, 10000, 0.075, 1, 0.0001)
+np.random.seed(42)
+experiment6 = Trainer("results_log/arch1-100-v8.txt",\
+     "param_files/arc1-100-v8.pth", Architecture1(100), opponents, "",
+     False, 10, 10000, 0.05, 1, 0.0001)
 experiment6.trainLoop()
 
