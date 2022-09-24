@@ -4,6 +4,7 @@ from models.OneMoveLookAhead import OneMoveLookAhead
 from models.RandomPlayer import RandomPlayer
 from models.MCTS import MCTSModel
 from models.NNModel import NNModel
+from models.Negamax import Negamax
 import torch
 """
 This file enables benchmarking of agent by manually playing against it
@@ -55,10 +56,23 @@ def play_input(model, ai_goes_first = True):
 
 #play_input(MCTSModel(), True)
 #"""
-nn = Architecture1(100)
 
+def makeMCTSOpponent():
+    NN = Architecture1(100)
+    NN.load_state_dict(torch.load("param_files/arc1-100-v8.pth"))
+    NN.double()
+    return MCTSModel(300, OneMoveLookAhead(), NN, 0.25)
 
-model = NNModel()
-model.set_position_scorer(nn, "param_files/arc1-100-v8.pth")
-play_input(model, False)
+def makeNegamaxOpponent():
+    nn = Architecture1(100)
+    nn.load_state_dict(torch.load("param_files/arc1-100-v8.pth"))
+    nn.double()
+    return Negamax(nn)
+
+def makeNNOpponent():
+    nn_model = NNModel()
+    nn_model.set_position_scorer(Architecture1(100),
+    "param_files/arc1-100-v8.pth")
+    return nn_model
+play_input(makeMCTSOpponent(), False)
 #"""

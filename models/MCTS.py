@@ -1,8 +1,9 @@
+from flask import g
 import numpy as np
 from .IModel import IModel
 from .RandomPlayer import RandomPlayer
 from .OneMoveLookAhead import OneMoveLookAhead
-
+import torch
 # Baseline solution: Used to pretrain neural nets
 # I lost to this (250 iteration version) while actually trying lmao
 
@@ -62,21 +63,33 @@ class MCTSModel(IModel):
     """
     rollout() -> execute rollout policy
     """
-    def __init__(self, num_its = 250, rollout_policy=OneMoveLookAhead()):
+    def __init__(self, num_its = 250, rollout_policy=OneMoveLookAhead(), 
+    auxillary_scorer = None, scorer_weight = 0.5):
         self.NUM_ITERATIONS = num_its
         self.rolloutPolicy = rollout_policy
-    
+        self.aux_scorer = auxillary_scorer
+        self.scorer_weight = scorer_weight
     def rollout(self, gameState):
         # input: gameState is copy of cur game state
         # use randomised rollout to simulate game state
         # to end (returns cur result if already terminal state)
         # todo: add 1 move lookahead for insta-wins?
+        dup = gameState.duplicate()
         player = self.rolloutPolicy
         while not gameState.isTerminal():
-            gameState.play(player.move(gameState))
-        return gameState.getResult()
+            gameState.play(player.move(gameState.duplicate()))
+
+        final_score = gameState.getResult()
+        if self.aux_scorer != None:
+            aux_move_score = self.aux_scorer(\
+                        torch.tensor(dup.toNPArray()).double().unsqueeze(0))
+            final_score = self.scorer_weight * aux_move_score +\
+                        gameState.getResult() * (1 - self.scorer_weight)
+        
+        return final_score
     
-    def move(self, gameState):
+    def move(self, gameState, eps = 0):
+        # eps required by interface
         root = Node(gameState, None, None)
         for _ in range(self.NUM_ITERATIONS):
             # Execute one MCTS pass per loop iteration
@@ -103,7 +116,5 @@ class MCTSModel(IModel):
                 curNode = curNode.parent
         #print(root.N, root.W, root.validMoves)
         return root.selectAction(EPS_MCTS=0) # take best action
-                    
-                            
-                        
+
 

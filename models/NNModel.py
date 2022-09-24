@@ -25,7 +25,7 @@ class NNModel(IModel):
 
     # exploration-exploitation parameter
 
-    def move(self, gameState, eps = 0.02): 
+    def move(self, gameState, eps = 0): 
         # input: duplicated gameState, eps for eps greedy
         # at inference time: eps is small but nonzero, for a little random
         best_move = -1

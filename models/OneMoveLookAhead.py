@@ -5,7 +5,7 @@ class OneMoveLookAhead(IModel):
     def __init__(self):
         pass
     
-    def move(self, gameState):
+    def move(self, gameState, eps = 0):
         # plays winning move if able
         assert(not gameState.isTerminal())
         for i in range(7):

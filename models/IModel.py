@@ -3,7 +3,7 @@ class IModel:
         pass
     
     # gameState should be a copy of current gameState
-    def move(self, gameState):
+    def move(self, gameState, eps = 0):
         pass
     
     # apply backprop etc

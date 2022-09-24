@@ -62,16 +62,16 @@ class Trainer:
         
         if nn_goes_first: 
             env.play(self.modelToTrain.move(env.duplicate(), eps))
-        else:
+        elif not inference_mode:
+            # slightly hacky, append empty board
             self.modelToTrain.gameStates.append(env.duplicate())
-            pass
 
         while not env.isTerminal():
             env.play(opponent.move(env.duplicate()))
 
             if not env.isTerminal():
                 env.play(self.modelToTrain.move(env.duplicate(), eps))
-            else:
+            elif not inference_mode:
                 self.modelToTrain.addTerminalState(env.duplicate())
         
         self.modelToTrain.gameOver(env.getResult(), inference_mode, self.bootstrap)
